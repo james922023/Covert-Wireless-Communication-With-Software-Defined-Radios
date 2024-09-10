@@ -4,7 +4,7 @@
 
 -RecoverTheMessage as of now takes the black and white image and has hardcoded preknowledge of message size. It loops through the image and then extracts the bits, putting it into an array and then spits out the hidden bit sequence into the console.
 
-#The code as of (9/06/2024)
+# The code as of (9/06/2024)
 
 -We are able to embed a bit sequence and decode it from a black and white image and then extract it
 -We are able to embed a smaller black and white photo in a larger one and then extract it
