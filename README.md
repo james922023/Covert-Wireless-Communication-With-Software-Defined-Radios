@@ -7,6 +7,9 @@
 # The code as of (9/06/2024)
 
 -We are able to embed a bit sequence and decode it from a black and white image and then extract it
+
 -We are able to embed a smaller black and white photo in a larger one and then extract it
+
 -We are able to embed a smaller colored image inside a larger one amd then extract it
+
 -We are able to embed a string or sentence inside a larger one and then extract it
