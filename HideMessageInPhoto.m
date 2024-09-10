@@ -1,16 +1,17 @@
 % Load the image
 image = imread('SpiderManMeme.png');
 
-% Display the image
-figure;
-imshow(image);
-
 % Get height and width for traversing through the image
 col = size(image, 1);
 row = size(image, 2);
 
 %change img to grey
 input=rgb2gray(image);
+
+% Display the image
+figure;
+imshow(input);
+title('converted grey image before hidden bits');
 
 %Secret Message Bits
 message=[1 0 1 0];
@@ -63,3 +64,4 @@ imwrite(output,"StegoImage.png")
 %create new figure for second image
 figure;
 imshow("StegoImage.png")
+title('grey stego image');
