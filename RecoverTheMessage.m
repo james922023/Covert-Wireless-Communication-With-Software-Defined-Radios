@@ -2,8 +2,9 @@
 image = imread('StegoImage.png');
 
 % Display the image
-%figure;
-%imshow(image);
+figure;
+imshow(image);
+title('grey stego image');
 
 % Get height and width for traversing through the image
 col = size(image, 1);
@@ -35,4 +36,5 @@ for i = 1 : col
     end
 end
 display(secretMessage);
+
 
