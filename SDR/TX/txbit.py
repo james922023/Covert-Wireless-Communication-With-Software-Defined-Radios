@@ -7,7 +7,7 @@ sdr = adi.Pluto("ip:192.168.2.1")
 sdr.tx_lo = int(2.4e9)
 sdr.tx_hardwaregain_chan0 = -10
 
-bits = np.array([1, 1, 0, 1, 0, 1, 0, 1])
+bits = np.array([1, 1, 0, 1, 0, 1, 0, 1, 0, 0, 0, 1, 0, 1, 0, 0, 0, 1, 0, 1, 0, 1, 0, 1])
 
 # ASK modulation
 fs = 1e6  # Sampling frequency
