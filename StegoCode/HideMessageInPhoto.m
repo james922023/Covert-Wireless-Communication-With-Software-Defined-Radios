@@ -1,5 +1,5 @@
 % Load the image
-image = imread('SpiderManMeme.png');
+image = imread('loosesprites.png');
 
 % Get height and width for traversing through the image
 col = size(image, 1);
