@@ -1,4 +1,3 @@
-#Code from pysdr.org
 import numpy as np
 import adi
 import matplotlib.pyplot as plt
