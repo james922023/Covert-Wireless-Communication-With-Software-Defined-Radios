@@ -2,6 +2,7 @@ import numpy as np
 import adi
 import matplotlib.pyplot as plt
 from scipy.signal import butter, filtfilt, welch
+from PIL import Image
 
 # Define parameters
 sample_rate = 1e6  # Hz
@@ -24,12 +25,29 @@ sdr.rx_buffer_size = num_samps
 sdr.gain_control_mode_chan0 = 'manual'
 sdr.rx_hardwaregain_chan0 = 33
 
+def image_to_1d_bit_array(image_path):
+    # Open the image using PIL
+    img = Image.open(image_path)
+    # Convert the image to a NumPy array (pixel values)
+    img_array = np.array(img)
+    # Flatten the 2D or 3D image array to 1D pixel array
+    img_1d_array = img_array.flatten()
+    # Convert each pixel value to an 8-bit binary representation and concatenate them into one long bit array
+    original_bits = np.unpackbits(img_1d_array.astype(np.uint8))
+    return original_bits, img_array.shape  # Return the bit array and original shape for later reconstruction 
+
+# Example usage
+image_path = "loosesprites.png"  # Replace with your image file path
+original_bits, img_shape = image_to_1d_bit_array(image_path)
+ 
+print(f"1D Image Array: {original_bits}")
+print(f"Original Image Shape: {img_shape}")
+
 # Define bits for transmission with 10 zeroes at the beginning and end
-original_bits = np.array([1, 0, 0, 0, 0, 1, 0, 0, 0, 1, 1,1,1,1,0,1,0,1,0,1,1]) 
-print(original_bits) 
+#original_bits = np.array([1, 0, 0, 0, 0, 1, 0, 0, 0, 1, 1,1,1,1,0,1,0,1,0,1,1])  
 padding = 10  # Number of zeroes to add
 bits = np.concatenate([np.zeros(padding), original_bits])
-
+bits
 
 # ASK modulation
 carrier = np.cos(2 * np.pi * fc * t)
