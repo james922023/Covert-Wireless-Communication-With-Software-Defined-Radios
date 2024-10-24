@@ -14,7 +14,7 @@
 
 -We are able to embed a string or sentence inside a larger one and then extract it
 
-#TRANSMISSION CODE as of 10/24/2024
+# TRANSMISSION CODE as of 10/24/2024
 
 -working transmission and reception on one radio(full duplex).
   -break down an image into bits
