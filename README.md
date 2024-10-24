@@ -12,7 +12,7 @@
 
 -We are able to embed a smaller colored image inside a larger one amd then extract it
 
--We are able to embed a string or sentence inside a larger one and then extract it
+-We are able to embed a string or sentence inside a colored image then extract it
 
 # TRANSMISSION CODE as of 10/24/2024
 
