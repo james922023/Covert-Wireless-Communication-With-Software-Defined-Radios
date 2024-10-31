@@ -24,13 +24,14 @@ sdr.rx_lo = int(ack_freq)
 sdr.rx_rf_bandwidth = int(sample_rate)
 sdr.rx_buffer_size = num_samps
 sdr.gain_control_mode_chan0 = 'manual'
-sdr.rx_hardwaregain_chan0 = 0 # dB, 0-72
+sdr.rx_hardwaregain_chan0 = 5 # dB, 0-72
 
 # CREATE TRANSMIT WAVEFORM(BPSK, 2 samples per symbol)
 num_symbols = 10
+num_wrong_ack_packets = 0
 # Define the start sequence
 start_sequence = np.array([1,1,1,-1,-1,-1,1,-1,-1,1,-1])
-ack_packet = np.ones(10)
+ack_packet = np.array([1,0,1,1,1,0,1,1,1,1])
 #CREATE ARRAY OR USE IMAGE ARRAY AS STARTING POINT
 x_int = np.random.randint(0, 2, num_symbols)  # 0 to 1 (binary)
 print("original bits (1 will be -1 and 0 will be 1): ", x_int)
@@ -48,7 +49,6 @@ samples = np.concatenate((start_sequence, x_symbols)) # FOR THE GRAPH 0 is posit
 samples = samples * 2**14  # Scale the samples for PlutoSDR
 # Now 'samples' contains the BPSK PACKET to transmit
 sdr.tx_cyclic_buffer = True # Enable cyclic buffers
-sdr.rx_cyclic_buffer = False
 success = False
 
 sdr.tx(samples) # start transmitting
@@ -56,12 +56,7 @@ sdr.tx(samples) # start transmitting
 while not success: #KEEP TRANSMITTING TIL GET ACK PACKET
     #receieve samples
     rx_samples = sdr.rx()
-    #print("transmitted samples: ",samples)
-    # Stop transmitting
     
-    plt.figure(0)
-    plt.plot(rx_samples,'.-')
-
     # Cross-correlation of the start sequence with the received signal
     cross_corr = np.correlate(rx_samples, start_sequence, mode='full')
 
@@ -78,52 +73,53 @@ while not success: #KEEP TRANSMITTING TIL GET ACK PACKET
         peak_index = np.argmax(np.abs(cross_corr))  # Find the next peak
         peak_value = cross_corr[peak_index]  # Update peak value
         # Print the results
-        print(f"Updated Peak Value: {peak_value}, Peak Index in Cross-Correlation: {peak_index}")
+        #print(f"Updated Peak Value: {peak_value}, Peak Index in Cross-Correlation: {peak_index}")
     else:
         # Print the results
-        print(f" 1st Peak Value: {peak_value}, Peak Index in Cross-Correlation: {peak_index}")
+        #print(f" 1st Peak Value: {peak_value}, Peak Index in Cross-Correlation: {peak_index}")
+        pass
 
     # Plot the cross-correlation result
     # Define the lag for plotting the cross-correlation
-    lag = np.arange(-len(start_sequence) + 1, len(rx_samples))
     # Plot the received samples
-    plt.plot(rx_samples, '.', label='Received Signal', alpha=0.5)
-
-    # Plot the cross-correlation on the same graph
-    # Shift the cross-correlation by the length of the start sequence to align with received signal
-    plt.plot(lag + len(start_sequence) - 1, cross_corr, label='Cross-Correlation', color='r')
-
-    plt.title('Received Samples and Cross-Correlation')
-    plt.xlabel('Sample Index')
-    plt.ylabel('Amplitude / Correlation Value')
-    plt.axhline(0, color='grey', lw=0.5, ls='--')  # Add a horizontal line at y=0 for reference
-    plt.legend()
-    plt.grid()
-    extracted_samples = rx_samples[peak_index+1:peak_index+len(ack_packet)]
-    print(extracted_samples)
+    
+    extracted_samples = rx_samples[peak_index+1:peak_index+len(ack_packet)+1]
+    #print(extracted_samples)
     # Copy the last element and append it to the array
-    extracted_samples = np.append(extracted_samples, extracted_samples[-1])
+    #extracted_samples = np.append(extracted_samples, extracted_samples[-1])
     #print(extracted_samples)
 
     # Convert the complex array based on the real part
     if peak_value>0:
-        converted_array = np.where(extracted_samples.real > 0, 0, 1)
-        #print(converted_array)
-    else:
         converted_array = np.where(extracted_samples.real > 0, 1, 0)
         #print(converted_array)
-        
-    # Remove redundancy (take every second element)
-    reduced_array = converted_array[::2]
-    #print("Converted Array without Redundancy:", reduced_array)
-
-    if np.array_equal(reduced_array, ack_packet):
-        print('100% sucess transmission')
     else:
-        print('transmission not 100%')
-        exit()
-    plt.show()
+        converted_array = np.where(extracted_samples.real > 0, 0, 1)
+        #print(converted_array)
+
+    if np.array_equal(converted_array, ack_packet):
+        print('correct ack packet:',converted_array)
+        plt.figure(0)
+        plt.plot(rx_samples,'.-')
+        lag = np.arange(-len(start_sequence) + 1, len(rx_samples))
+        # Plot the cross-correlation on the same graph
+        # Shift the cross-correlation by the length of the start sequence to align with received signal
+        plt.plot(rx_samples, '.', label='Received Signal', alpha=0.5)
+        plt.plot(lag + len(start_sequence) - 1, cross_corr, label='Cross-Correlation', color='r')
+        plt.title('Received Samples and Cross-Correlation')
+        plt.xlabel('Sample Index')
+        plt.ylabel('Amplitude / Correlation Value')
+        plt.axhline(0, color='grey', lw=0.5, ls='--')  # Add a horizontal line at y=0 for reference
+        plt.legend()
+        plt.grid()
+        print('100% sucess transmission')
+        success = True
+    else:
+        num_wrong_ack_packets +=1
+        #exit()
 sdr.tx_destroy_buffer()
+print("wrong ack packets: ",num_wrong_ack_packets)
+plt.show()
 
 
 
