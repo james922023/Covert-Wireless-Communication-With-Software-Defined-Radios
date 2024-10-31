@@ -40,7 +40,7 @@ start_sequence = np.array([1,1,1,-1,-1,-1,1,-1,-1,1,-1])
 
 
 # CONVERT IMAGE TO ARRAY FOR SENDING
-image_path = 'StegoImage.png'  # Replace with your image path
+image_path = "C:/Users/dankp/Desktop/EGNSTEGO/TransmissionCodeUpdated/StegoImage.png"
 image = Image.open(image_path) #.convert('L')  # Convert to grayscale
 # Convert the image to a 2D NumPy array
 image_array = np.array(image)
