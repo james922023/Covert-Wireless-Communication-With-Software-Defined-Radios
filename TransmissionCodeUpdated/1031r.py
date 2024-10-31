@@ -47,7 +47,7 @@ x_symbols = np.repeat(x_symbols, 2)  # 16 samples per symbol
 success = False
 
 while not success: #KEEP Receiving TIL GET PACKET
-    time.sleep(.006)
+    #time.sleep(.008)
     #receieve samples
     rx_samples = sdr.rx()
     #print("transmitted samples: ",samples)
@@ -127,4 +127,18 @@ sdr.rx_cyclic_buffer = False
 sdr.tx(samples) # start transmitting
 time.sleep(1) # wait for the transmission to finish then timeout
 sdr.tx_destroy_buffer()
+
+#PRINT ASCCI CONVERTED TO CONSOLE
+# Convert the binary array to a string format
+binary_string = ''.join(str(bit) for bit in reduced_array)
+
+# Split the binary string into 8-bit chunks
+chunks = [binary_string[i:i+8] for i in range(0, len(binary_string), 8)]
+
+# Convert each chunk to an ASCII character
+ascii_text = ''.join(chr(int(chunk, 2)) for chunk in chunks)
+
+print(ascii_text)
+
+
 plt.show()
