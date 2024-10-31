@@ -33,7 +33,7 @@ num_wrong_ack_packets = 0
 start_sequence = np.array([1,1,1,-1,-1,-1,1,-1,-1,1,-1])
 ack_packet = np.array([1,0,1,1,1,0,1,1,1,1])
 #CREATE ARRAY OR USE IMAGE ARRAY AS STARTING POINT
-x_int = np.random.randint(0,1,1,0,1,0,0,0,0,1,1,0,0,1,0,1,0,1,1,0,1,1,0,0,0,1,1,0,1,1,0,0,0,1,1,0,1,1,1,1)  # 0 to 1 (binary)
+x_int = np.array([0,1,1,0,1,0,0,0,0,1,1,0,0,1,0,1,0,1,1,0,1,1,0,0,0,1,1,0,1,1,0,0,0,1,1,0,1,1,1,1])  # 0 to 1 (binary)
 print("original bits (1 will be -1 and 0 will be 1): ", x_int)
 
 # Define phase for BPSK: 0 for 0, π for 1
@@ -51,7 +51,7 @@ samples = samples * 2**14  # Scale the samples for PlutoSDR
 sdr.tx_cyclic_buffer = True # Enable cyclic buffers
 success = False
 
-#sdr.tx(samples) # start transmitting
+sdr.tx(samples) # start transmitting
 
 while not success: #KEEP TRANSMITTING TIL GET ACK PACKET
     #receieve samples
