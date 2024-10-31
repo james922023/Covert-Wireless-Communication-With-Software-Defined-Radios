@@ -30,7 +30,7 @@ sdr.rx_hardwaregain_chan0 = 0 # dB, 0-72
 num_symbols = 10
 # Define the start sequence
 start_sequence = np.array([1,1,1,-1,-1,-1,1,-1,-1,1,-1])
-ack_packet = np.ones(10)
+ack_packet = np.array([1,-1,1,1,1,-1,1,1,1,1])
 
 #CREATE ARRAY OR USE IMAGE ARRAY AS STARTING POINT
 x_int = np.random.randint(0, 2, num_symbols)  # 0 to 1 (binary)
@@ -47,12 +47,12 @@ x_symbols = np.repeat(x_symbols, 2)  # 16 samples per symbol
 success = False
 
 while not success: #KEEP Receiving TIL GET PACKET
+    time.sleep(.006)
     #receieve samples
     rx_samples = sdr.rx()
     #print("transmitted samples: ",samples)
     # Stop transmitting
     sdr.tx_destroy_buffer()
-    sdr.rx_destroy_buffer()
 
     plt.figure(0)
     plt.plot(rx_samples,'.-')
@@ -95,7 +95,7 @@ while not success: #KEEP Receiving TIL GET PACKET
     plt.legend()
     plt.grid()
     extracted_samples = rx_samples[peak_index+1:peak_index+num_symbols*2]
-    print(extracted_samples)
+    #print(extracted_samples)
     # Copy the last element and append it to the array
     extracted_samples = np.append(extracted_samples, extracted_samples[-1])
     #print(extracted_samples)
@@ -110,7 +110,7 @@ while not success: #KEEP Receiving TIL GET PACKET
         
     # Remove redundancy (take every second element)
     reduced_array = converted_array[::2]
-    #print("Converted Array without Redundancy:", reduced_array)
+    print("Converted Array without Redundancy:", reduced_array)
 
     if len(reduced_array) == len(x_int):
         print('100% success transmission')
@@ -126,6 +126,7 @@ sdr.tx_cyclic_buffer = True # Enable cyclic buffers
 sdr.rx_cyclic_buffer = False
 sdr.tx(samples) # start transmitting
 time.sleep(1) # wait for the transmission to finish then timeout
+sdr.tx_destroy_buffer()
 plt.show()
 
 
