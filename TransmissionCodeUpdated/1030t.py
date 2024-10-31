@@ -8,7 +8,7 @@ from PIL import Image
 #SET PARAMETERS FOR THE RADIO
 sample_rate = 1000000 # Hz
 center_freq = 915e6 # Hz
-num_samps = 62 # number of samples per call to rx()
+num_samps = 42 # number of samples per call to rx()
 ack_freq = 600e6 # Hz
 
 sdr = adi.Pluto("ip:192.168.2.1")
@@ -41,7 +41,7 @@ x_radians = x_int * np.pi  # 0 for 0, π for 1
 x_symbols = np.cos(x_radians) + 1j * np.sin(x_radians)  # BPSK complex symbols
 
 # Repeat each symbol to create the waveform with 16 samples per symbol
-x_symbols = np.repeat(x_symbols, 2)  # 16 samples per symbol
+#x_symbols = np.repeat(x_symbols, 2)  # 16 samples per symbol
 
 samples = np.concatenate((start_sequence, x_symbols)) # FOR THE GRAPH 0 is positive, 1 is negative
 
