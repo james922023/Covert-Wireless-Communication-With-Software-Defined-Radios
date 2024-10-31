@@ -8,7 +8,7 @@ from PIL import Image
 #SET PARAMETERS FOR THE RADIO
 sample_rate = 1000000 # Hz
 center_freq = 915e6 # Hz
-num_samps = 42 # number of samples per call to rx()
+num_samps = 62 # number of samples per call to rx()
 ack_freq = 600e6 # Hz
 
 sdr = adi.Pluto("ip:192.168.2.1")
@@ -41,7 +41,7 @@ x_radians = x_int * np.pi  # 0 for 0, π for 1
 x_symbols = np.cos(x_radians) + 1j * np.sin(x_radians)  # BPSK complex symbols
 
 # Repeat each symbol to create the waveform with 16 samples per symbol
-#x_symbols = np.repeat(x_symbols, 2)  # 16 samples per symbol
+x_symbols = np.repeat(x_symbols, 2)  # 16 samples per symbol
 
 
 success = False
@@ -67,7 +67,7 @@ while not success: #KEEP Receiving TIL GET PACKET
     #CALCULATE HOW MUCH SAMPLES AFTER THE FOUND INDEX
     samples_after_barker = len(rx_samples)-peak_index
     #HANDLE CASE WITH INCOMPLETE BARKER AT THE END BEING HIGHER CROSS CORRELATION VALUE
-    if samples_after_barker < (num_symbols)-1:
+    if samples_after_barker < (num_symbols*2)-1:
         # If the peak is too close to the end, we need to find the next highest peak
         cross_corr[peak_index] = 0  # Temporarily set the peak to negative infinity
         peak_index = np.argmax(np.abs(cross_corr))  # Find the next peak
@@ -94,7 +94,7 @@ while not success: #KEEP Receiving TIL GET PACKET
     plt.axhline(0, color='grey', lw=0.5, ls='--')  # Add a horizontal line at y=0 for reference
     plt.legend()
     plt.grid()
-    extracted_samples = rx_samples[peak_index+1:peak_index+num_symbols]
+    extracted_samples = rx_samples[peak_index+1:peak_index+num_symbols*2]
     #print(extracted_samples)
     # Copy the last element and append it to the array
     extracted_samples = np.append(extracted_samples, extracted_samples[-1])
@@ -109,12 +109,11 @@ while not success: #KEEP Receiving TIL GET PACKET
         #print(converted_array)
         
     # Remove redundancy (take every second element)
-    #reduced_array = converted_array[::2]
-    #print("Converted Array without Redundancy:", reduced_array)
+    reduced_array = converted_array[::2]
+    print("Converted Array without Redundancy:", reduced_array)
 
-    if len(converted_array) == len(x_int):
+    if len(reduced_array) == len(x_int):
         print('100% success transmission')
-        print(converted_array)
         success = True
     else:
         print('transmission not 100%')
