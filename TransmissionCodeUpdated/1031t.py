@@ -27,13 +27,13 @@ sdr.gain_control_mode_chan0 = 'manual'
 sdr.rx_hardwaregain_chan0 = 5 # dB, 0-72
 
 # CREATE TRANSMIT WAVEFORM(BPSK, 2 samples per symbol)
-num_symbols = 25
+num_symbols = 40
 num_wrong_ack_packets = 0
 # Define the start sequence
 start_sequence = np.array([1,1,1,-1,-1,-1,1,-1,-1,1,-1])
 ack_packet = np.array([1,0,1,1,1,0,1,1,1,1])
 #CREATE ARRAY OR USE IMAGE ARRAY AS STARTING POINT
-x_int = np.random.randint(0, 2, num_symbols)  # 0 to 1 (binary)
+x_int = np.random.randint(0,1,1,0,1,0,0,0,0,1,1,0,0,1,0,1,0,1,1,0,1,1,0,0,0,1,1,0,1,1,0,0,0,1,1,0,1,1,1,1)  # 0 to 1 (binary)
 print("original bits (1 will be -1 and 0 will be 1): ", x_int)
 
 # Define phase for BPSK: 0 for 0, π for 1

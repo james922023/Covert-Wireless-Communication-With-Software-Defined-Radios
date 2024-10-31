@@ -8,7 +8,7 @@ from PIL import Image
 #SET PARAMETERS FOR THE RADIO
 sample_rate = 1000000 # Hz
 center_freq = 915e6 # Hz
-num_samps = 122 # number of samples per call to rx()
+num_samps = 182 # number of samples per call to rx()
 ack_freq = 600e6 # Hz
 
 sdr = adi.Pluto("ip:192.168.2.1")
@@ -27,7 +27,7 @@ sdr.gain_control_mode_chan0 = 'manual'
 sdr.rx_hardwaregain_chan0 = 0 # dB, 0-72
 
 # CREATE TRANSMIT WAVEFORM(BPSK, 2 samples per symbol)
-num_symbols = 10
+num_symbols = 40
 # Define the start sequence
 start_sequence = np.array([1,1,1,-1,-1,-1,1,-1,-1,1,-1])
 ack_packet = np.array([1,-1,1,1,1,-1,1,1,1,1])
