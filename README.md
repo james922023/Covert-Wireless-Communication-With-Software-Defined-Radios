@@ -36,6 +36,14 @@
 *Note, as of now, sometimes there seems to be what I think is a small synchronization issue that causes rx_samples to be small and taper off to zero
 ![image](https://github.com/user-attachments/assets/88bc8243-e674-418e-8085-29e88cf49e37)
 
+# TRANSMISSION CODE as of 10/31/2024
+- Was able to transmit hello to one radio from another on two seperate pc's
+- note it wasnt always accurate, and it may have to do with my logic
+![image](https://github.com/user-attachments/assets/75121aff-510b-4a26-9852-8be02fa09ef5)
+(Below is reception side and above is transmit side. Transmit side receives ack packet and looks for it , continuously transmitting the packet till it sees the ack packet.)
+![image](https://github.com/user-attachments/assets/4368ccee-3bb9-4d27-b864-d4b226be4203)
+
+
 
 
 
