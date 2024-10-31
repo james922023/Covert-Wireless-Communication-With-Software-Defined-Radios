@@ -40,8 +40,9 @@
 - Was able to transmit hello to one radio from another on two seperate pc's
 - note it wasnt always accurate, and it may have to do with my logic
 ![image](https://github.com/user-attachments/assets/75121aff-510b-4a26-9852-8be02fa09ef5)
-(Below is reception side and above is transmit side. Transmit side receives ack packet and looks for it , continuously transmitting the packet till it sees the ack packet.)
+(Below is reception side and above is transmit side. Transmit side sends data packet and receives ack packet. It transmits the packet coninuously, while continuously receving trying to pickup the ack packet.)
 ![image](https://github.com/user-attachments/assets/4368ccee-3bb9-4d27-b864-d4b226be4203)
+(the receiver, continues through a loop to grab a packet sized chunk with a preable, then sends the ack packet for one packet before timing out and finishing the program. I think the issue here lies that the loop only looks for packet sized data even if its mostly wrong, so i need to make a way to check some of the packet qquickly and make that be the determining factor if it needs to pick up a new batch of samples from the buffer)
 
 
 
