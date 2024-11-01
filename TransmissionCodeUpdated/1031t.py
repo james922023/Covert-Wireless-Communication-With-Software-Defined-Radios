@@ -9,7 +9,7 @@ from PIL import Image
 sample_rate = 1000000 # Hz
 center_freq = 915e6 # Hz
 num_samps = 62 # number of samples per call to rx()
-ack_freq = 600e6 # Hz
+ack_freq = 900e6 # Hz
 
 sdr = adi.Pluto("ip:192.168.2.1")
 sdr.sample_rate = int(sample_rate)
@@ -24,7 +24,7 @@ sdr.rx_lo = int(ack_freq)
 sdr.rx_rf_bandwidth = int(sample_rate)
 sdr.rx_buffer_size = num_samps
 sdr.gain_control_mode_chan0 = 'manual'
-sdr.rx_hardwaregain_chan0 = 5 # dB, 0-72
+sdr.rx_hardwaregain_chan0 = 70 # dB, 0-72
 
 # CREATE TRANSMIT WAVEFORM(BPSK, 2 samples per symbol)
 num_symbols = 40
@@ -59,11 +59,17 @@ while not success: #KEEP TRANSMITTING TIL GET ACK PACKET
     
     # Cross-correlation of the start sequence with the received signal
     cross_corr = np.correlate(rx_samples, start_sequence, mode='full')
+    fatt = 20000
 
+    # Filter the cross-correlation to only allow values above a threshold n
+    cross_corr = np.where(np.abs(cross_corr) > fatt, cross_corr, 0)
     # Find the index of the peak in the cross-correlation
     peak_index = np.argmax(np.abs(cross_corr))  # Index of the maximum value
     peak_value = cross_corr[peak_index]  # Value of the peak
 
+    if peak_value == 0:
+        continue
+    
     #CALCULATE HOW MUCH SAMPLES AFTER THE FOUND INDEX
     samples_after_barker = len(rx_samples)-peak_index
     #HANDLE CASE WITH INCOMPLETE BARKER AT THE END BEING HIGHER CROSS CORRELATION VALUE
@@ -72,12 +78,17 @@ while not success: #KEEP TRANSMITTING TIL GET ACK PACKET
         cross_corr[peak_index] = 0  # Temporarily set the peak to negative infinity
         peak_index = np.argmax(np.abs(cross_corr))  # Find the next peak
         peak_value = cross_corr[peak_index]  # Update peak value
+        peak_value = cross_corr[peak_index]  # Value of the peak
+        if peak_value == 0:
+            continue
+        samples_after_barker = len(rx_samples)-peak_index
+        if samples_after_barker < len(ack_packet)-1:
+            continue
         # Print the results
-        #print(f"Updated Peak Value: {peak_value}, Peak Index in Cross-Correlation: {peak_index}")
+        print(f"Updated Peak Value: {peak_value}, Peak Index in Cross-Correlation: {peak_index}")
     else:
         # Print the results
-        #print(f" 1st Peak Value: {peak_value}, Peak Index in Cross-Correlation: {peak_index}")
-        pass
+        print(f" 1st Peak Value: {peak_value}, Peak Index in Cross-Correlation: {peak_index}")
 
     # Plot the cross-correlation result
     # Define the lag for plotting the cross-correlation
@@ -99,24 +110,25 @@ while not success: #KEEP TRANSMITTING TIL GET ACK PACKET
 
     if np.array_equal(converted_array, ack_packet):
         print('correct ack packet:',converted_array)
-        plt.figure(0)
-        plt.plot(rx_samples,'.-')
-        lag = np.arange(-len(start_sequence) + 1, len(rx_samples))
-        # Plot the cross-correlation on the same graph
-        # Shift the cross-correlation by the length of the start sequence to align with received signal
-        plt.plot(rx_samples, '.', label='Received Signal', alpha=0.5)
-        plt.plot(lag + len(start_sequence) - 1, cross_corr, label='Cross-Correlation', color='r')
-        plt.title('Received Samples and Cross-Correlation')
-        plt.xlabel('Sample Index')
-        plt.ylabel('Amplitude / Correlation Value')
-        plt.axhline(0, color='grey', lw=0.5, ls='--')  # Add a horizontal line at y=0 for reference
-        plt.legend()
-        plt.grid()
+        print(peak_value)
         print('100% sucess transmission')
         success = True
     else:
         num_wrong_ack_packets +=1
         #exit()
 sdr.tx_destroy_buffer()
+plt.figure(0)
+plt.plot(rx_samples,'.-')
+lag = np.arange(-len(start_sequence) + 1, len(rx_samples))
+# Plot the cross-correlation on the same graph
+# Shift the cross-correlation by the length of the start sequence to align with received signal
+plt.plot(rx_samples, '.', label='Received Signal', alpha=0.5)
+plt.plot(lag + len(start_sequence) - 1, cross_corr, label='Cross-Correlation', color='r')
+plt.title('Received Samples and Cross-Correlation')
+plt.xlabel('Sample Index')
+plt.ylabel('Amplitude / Correlation Value')
+plt.axhline(0, color='grey', lw=0.5, ls='--')  # Add a horizontal line at y=0 for reference
+plt.legend()
+plt.grid()
 print("wrong ack packets: ",num_wrong_ack_packets)
 plt.show()

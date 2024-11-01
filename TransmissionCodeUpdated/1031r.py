@@ -9,7 +9,7 @@ from PIL import Image
 sample_rate = 1000000 # Hz
 center_freq = 915e6 # Hz
 num_samps = 182 # number of samples per call to rx()
-ack_freq = 600e6 # Hz
+ack_freq = 910e6 # Hz
 
 sdr = adi.Pluto("ip:192.168.2.1")
 sdr.sample_rate = int(sample_rate)
@@ -24,7 +24,7 @@ sdr.rx_lo = int(center_freq)
 sdr.rx_rf_bandwidth = int(sample_rate)
 sdr.rx_buffer_size = num_samps
 sdr.gain_control_mode_chan0 = 'manual'
-sdr.rx_hardwaregain_chan0 = 0 # dB, 0-72
+sdr.rx_hardwaregain_chan0 = 70 # dB, 0-72
 
 # CREATE TRANSMIT WAVEFORM(BPSK, 2 samples per symbol)
 num_symbols = 40
@@ -50,7 +50,7 @@ while not success: #KEEP Receiving TIL GET PACKET
     #time.sleep(.008)
     #receieve samples
     rx_samples = sdr.rx()
-    #print("transmitted samples: ",samples)
+    print("transmitted samples: ",rx_samples)
     # Stop transmitting
     sdr.tx_destroy_buffer()
 
@@ -60,6 +60,12 @@ while not success: #KEEP Receiving TIL GET PACKET
     # Cross-correlation of the start sequence with the received signal
     cross_corr = np.correlate(rx_samples, start_sequence, mode='full')
 
+    # Set your threshold value here
+    n = 1500
+
+    # Filter the cross-correlation to only allow values above a threshold n
+    cross_corr = np.where(np.abs(cross_corr) > n, cross_corr, 0)
+    
     # Find the index of the peak in the cross-correlation
     peak_index = np.argmax(np.abs(cross_corr))  # Index of the maximum value
     peak_value = cross_corr[peak_index]  # Value of the peak
@@ -86,7 +92,7 @@ while not success: #KEEP Receiving TIL GET PACKET
 
     # Plot the cross-correlation on the same graph
     # Shift the cross-correlation by the length of the start sequence to align with received signal
-    plt.plot(lag + len(start_sequence) - 1, cross_corr, label='Cross-Correlation', color='r')
+    plt.plot(lag + len(start_sequence) - 1, np.abs(cross_corr), label='Cross-Correlation', color='r')
 
     plt.title('Received Samples and Cross-Correlation')
     plt.xlabel('Sample Index')
