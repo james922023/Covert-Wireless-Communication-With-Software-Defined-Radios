@@ -29,7 +29,7 @@ sdr.rx_hardwaregain_chan0 = 70 # dB, 0-72
 def int_to_5bit_array(n):
     # Convert to 5-bit binary string and then map each bit to an integer
     binary_str = format(n, '05b')  # Convert integer to 5-bit binary string
-    binary_array = [int(bit) for bit in binary_str]  # Convert to a list of integers
+    binary_array = np.array([int(bit) for bit in binary_str])  # Convert to a list of integers
     return binary_array
 
 # CREATE TRANSMIT WAVEFORM(BPSK, 2 samples per symbol)
@@ -39,6 +39,7 @@ num_wrong_ack_packets = 0
 start_sequence = np.array([1,1,1,-1,-1,-1,1,-1,-1,1,-1])
 n = 1  # Replace with any integer from 1 to 16
 ack_packet = int_to_5bit_array(n)
+ack_packet = np.where(ack_packet > 0, -1, 1)
 ack_packet = np.repeat(ack_packet, 3)
 #CREATE ARRAY OR USE IMAGE ARRAY AS STARTING POINT
 x_int = np.array([0,1,1,0,1,0,0,0,0,1,1,0,0,1,0,1,0,1,1,0,1,1,0,0,0,1,1,0,1,1,0,0,0,1,1,0,1,1,1,1])  # 0 to 1 (binary)
@@ -110,18 +111,25 @@ while not success: #KEEP TRANSMITTING TIL GET ACK PACKET
 
     # Convert the complex array based on the real part
     if peak_value>0:
-        converted_array = np.where(extracted_samples.real > 0, 1, 0)
-        #print(converted_array)
-    else:
         converted_array = np.where(extracted_samples.real > 0, 0, 1)
-        #print(converted_array)
-    reshaped_array = converted_array.reshape(-1, 3)
+        flipped_ack_packet = np.where(ack_packet > 0, 1, 0)
+        print(converted_array)
+        print(flipped_ack_packet)
+    else:
+        converted_array = np.where(extracted_samples.real > 0, 1, 0)
+        flipped_ack_packet = np.where(ack_packet > 0, 0, 1)
+        print(converted_array)
+        print(flipped_ack_packet)
+    if len(converted_array) % 3 == 0:
+        reshaped_array = converted_array.reshape(-1, 3)
+        reshaped_array2 = flipped_ack_packet.reshape(-1, 3)
+    else:
+        continue
     # Remove redundancy (take average of every 3 elements)
     reduced_array = np.mean(reshaped_array, axis=1).round().astype(int)
-    reduced_starter_indicator = ack_packet.reshape(-1, 3)
-    reduced_starter_indicator = np.mean(ack_packet, axis=1).round().astype(int)
-    if np.array_equal(reduced_array[0:5], reduced_starter_indicator):
-        print('correct ack packet:',reduced_array[0:5])
+    reduced_array2 = np.mean(reshaped_array2, axis=1).round().astype(int)
+    if np.array_equal(reduced_array, reduced_array2):
+        print('correct ack packet:',reduced_array)
         print(peak_value)
         print('100% sucess transmission')
         success = True
