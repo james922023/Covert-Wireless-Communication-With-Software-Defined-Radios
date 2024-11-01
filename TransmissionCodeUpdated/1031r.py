@@ -71,7 +71,7 @@ while not success: #KEEP Receiving TIL GET PACKET
     #CALCULATE HOW MUCH SAMPLES AFTER THE FOUND INDEX
     samples_after_barker = len(rx_samples)-peak_index
     #HANDLE CASE WITH INCOMPLETE BARKER AT THE END BEING HIGHER CROSS CORRELATION VALUE
-    if samples_after_barker < (num_symbols*2)-1:
+    if samples_after_barker < (num_symbols*3)-1:
         # If the peak is too close to the end, we need to find the next highest peak
         cross_corr[peak_index] = 0  # Temporarily set the peak to negative infinity
         peak_index = np.argmax(np.abs(cross_corr))  # Find the next peak
@@ -80,7 +80,7 @@ while not success: #KEEP Receiving TIL GET PACKET
             continue
         #BREAK iF NOT ENOUGH SAMPLES AFTER THIS PEAK
         samples_after_barker = len(rx_samples)-peak_index
-        if samples_after_barker < (num_symbols*2)-1:
+        if samples_after_barker < (num_symbols*3)-1:
             continue
         peak_value = cross_corr[peak_index]  # Update peak value
         # Print the results
@@ -107,7 +107,7 @@ while not success: #KEEP Receiving TIL GET PACKET
     plt.axhline(0, color='grey', lw=0.5, ls='--')  # Add a horizontal line at y=0 for reference
     plt.legend()
     plt.grid()
-    extracted_samples = rx_samples[peak_index+1:peak_index+num_symbols*2]
+    extracted_samples = rx_samples[peak_index+1:peak_index+num_symbols*3]
     #print(extracted_samples)
     # Copy the last element and append it to the array
     extracted_samples = np.append(extracted_samples, extracted_samples[-1])
