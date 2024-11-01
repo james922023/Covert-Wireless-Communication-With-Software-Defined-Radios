@@ -29,7 +29,7 @@ sdr.rx_hardwaregain_chan0 = 70 # dB, 0-72
 def int_to_5bit_array(n):
     # Convert to 5-bit binary string and then map each bit to an integer
     binary_str = format(n, '05b')  # Convert integer to 5-bit binary string
-    binary_array = [int(bit) for bit in binary_str]  # Convert to a list of integers
+    binary_array = np.array([int(bit) for bit in binary_str])  # Convert to a list of integers
     return binary_array
 
 # CREATE TRANSMIT WAVEFORM(BPSK, 2 samples per symbol)
@@ -38,6 +38,7 @@ num_symbols = 40
 start_sequence = np.array([1,1,1,-1,-1,-1,1,-1,-1,1,-1])
 n = 1  # Replace with any integer from 1 to 16
 ack_packet = int_to_5bit_array(n)
+ack_packet = np.where(ack_packet >0 , -1 , 1)
 ack_packet = np.repeat(ack_packet, 3)
 
 #CREATE ARRAY OR USE IMAGE ARRAY AS STARTING POINT
@@ -118,28 +119,33 @@ while not success: #KEEP Receiving TIL GET PACKET
     extracted_samples = rx_samples[peak_index+1:peak_index+num_symbols*3+len(ack_packet)+1]
     #print(extracted_samples)
     # Copy the last element and append it to the array
-    extracted_samples = np.append(extracted_samples, extracted_samples[-1])
-    #print(extracted_samples)
+    #extracted_samples = np.append(extracted_samples, extracted_samples[-1])
+    print(extracted_samples)
 
     # Convert the complex array based on the real part
     if peak_value>0:
         converted_array = np.where(extracted_samples.real > 0, 0, 1)
-        #print(converted_array)
+        print(converted_array)
     else:
         converted_array = np.where(extracted_samples.real > 0, 1, 0)
-        #print(converted_array)
+        print(converted_array)
+    print("length of converted array",len(converted_array))
     # Step 2: Reshape the array into rows of 3 elements
-    reshaped_array = converted_array.reshape(-1, 3)
+    if len(converted_array) % 3 ==0:
+        reshaped_array = converted_array.reshape(-1, 3)
+    else:
+        continue
     # Remove redundancy (take average of every 3 elements)
     reduced_array = np.mean(reshaped_array, axis=1).round().astype(int)
     print("Converted Array without Redundancy:", reduced_array)
-    reduced_starter_indicator = ack_packet.reshape(-1, 3)
-    reduced_starter_indicator = np.mean(ack_packet, axis=1).round().astype(int)
-    if np.array_equal(reduced_array[0:5],reduced_starter_indicator):
+    if np.array_equal(reduced_array[0:5],int_to_5bit_array(1)):
         print('correct ack packet:',reduced_array[0:5])
+        reduced_array = reduced_array[5:]
     else:
         print('incorrect ack packet:',reduced_array[0:5])
         continue
+    print("length reduced array",len(reduced_array))
+    print(reduced_array)
     if len(reduced_array) == len(x_int):
         print('100% success transmission')
         success = True
