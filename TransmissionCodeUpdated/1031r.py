@@ -26,11 +26,19 @@ sdr.rx_buffer_size = num_samps
 sdr.gain_control_mode_chan0 = 'manual'
 sdr.rx_hardwaregain_chan0 = 70 # dB, 0-72
 
+def int_to_5bit_array(n):
+    # Convert to 5-bit binary string and then map each bit to an integer
+    binary_str = format(n, '05b')  # Convert integer to 5-bit binary string
+    binary_array = [int(bit) for bit in binary_str]  # Convert to a list of integers
+    return binary_array
+
 # CREATE TRANSMIT WAVEFORM(BPSK, 2 samples per symbol)
 num_symbols = 40
 # Define the start sequence
 start_sequence = np.array([1,1,1,-1,-1,-1,1,-1,-1,1,-1])
-ack_packet = np.array([1,-1,1,1,1,-1,1,1,1,1])
+n = 1  # Replace with any integer from 1 to 16
+ack_packet = int_to_5bit_array(n)
+ack_packet = np.repeat(ack_packet, 3)
 
 #CREATE ARRAY OR USE IMAGE ARRAY AS STARTING POINT
 x_int = np.random.randint(0, 2, num_symbols)  # 0 to 1 (binary)
@@ -71,7 +79,7 @@ while not success: #KEEP Receiving TIL GET PACKET
     #CALCULATE HOW MUCH SAMPLES AFTER THE FOUND INDEX
     samples_after_barker = len(rx_samples)-peak_index
     #HANDLE CASE WITH INCOMPLETE BARKER AT THE END BEING HIGHER CROSS CORRELATION VALUE
-    if samples_after_barker < (num_symbols*3)-1:
+    if samples_after_barker < (num_symbols*3)+len(ack_packet)-1:
         # If the peak is too close to the end, we need to find the next highest peak
         cross_corr[peak_index] = 0  # Temporarily set the peak to negative infinity
         peak_index = np.argmax(np.abs(cross_corr))  # Find the next peak
@@ -107,7 +115,7 @@ while not success: #KEEP Receiving TIL GET PACKET
     plt.axhline(0, color='grey', lw=0.5, ls='--')  # Add a horizontal line at y=0 for reference
     plt.legend()
     plt.grid()
-    extracted_samples = rx_samples[peak_index+1:peak_index+num_symbols*3]
+    extracted_samples = rx_samples[peak_index+1:peak_index+num_symbols*3+len(ack_packet)+1]
     #print(extracted_samples)
     # Copy the last element and append it to the array
     extracted_samples = np.append(extracted_samples, extracted_samples[-1])
@@ -125,7 +133,13 @@ while not success: #KEEP Receiving TIL GET PACKET
     # Remove redundancy (take average of every 3 elements)
     reduced_array = np.mean(reshaped_array, axis=1).round().astype(int)
     print("Converted Array without Redundancy:", reduced_array)
-
+    reduced_starter_indicator = ack_packet.reshape(-1, 3)
+    reduced_starter_indicator = np.mean(ack_packet, axis=1).round().astype(int)
+    if np.array_equal(reduced_array[0:5],reduced_starter_indicator):
+        print('correct ack packet:',reduced_array[0:5])
+    else:
+        print('incorrect ack packet:',reduced_array[0:5])
+        continue
     if len(reduced_array) == len(x_int):
         print('100% success transmission')
         success = True
