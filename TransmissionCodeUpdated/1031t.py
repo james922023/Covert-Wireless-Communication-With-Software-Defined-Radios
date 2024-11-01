@@ -41,7 +41,7 @@ x_radians = x_int * np.pi  # 0 for 0, π for 1
 x_symbols = np.cos(x_radians) + 1j * np.sin(x_radians)  # BPSK complex symbols
 
 # Repeat each symbol to create the waveform with 16 samples per symbol
-x_symbols = np.repeat(x_symbols, 2)  # 16 samples per symbol
+x_symbols = np.repeat(x_symbols, 3)  # 16 samples per symbol
 
 samples = np.concatenate((start_sequence, x_symbols)) # FOR THE GRAPH 0 is positive, 1 is negative
 

@@ -41,7 +41,7 @@ x_radians = x_int * np.pi  # 0 for 0, π for 1
 x_symbols = np.cos(x_radians) + 1j * np.sin(x_radians)  # BPSK complex symbols
 
 # Repeat each symbol to create the waveform with 16 samples per symbol
-x_symbols = np.repeat(x_symbols, 2)  # 16 samples per symbol
+x_symbols = np.repeat(x_symbols, 3)  # 16 samples per symbol
 
 
 success = False
@@ -120,9 +120,10 @@ while not success: #KEEP Receiving TIL GET PACKET
     else:
         converted_array = np.where(extracted_samples.real > 0, 1, 0)
         #print(converted_array)
-        
-    # Remove redundancy (take every second element)
-    reduced_array = converted_array[::2]
+    # Step 2: Reshape the array into rows of 3 elements
+    reshaped_array = converted_array.reshape(-1, 3)
+    # Remove redundancy (take average of every 3 elements)
+    reduced_array = np.mean(reshaped_array, axis=1).round().astype(int)
     print("Converted Array without Redundancy:", reduced_array)
 
     if len(reduced_array) == len(x_int):
