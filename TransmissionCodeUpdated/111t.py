@@ -157,3 +157,4 @@ for k in range(16):
     #plt.grid()
     print("wrong ack packets: ",num_wrong_ack_packets)
     #plt.show()
+time.sleep(5)

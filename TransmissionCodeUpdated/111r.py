@@ -179,3 +179,4 @@ for k in range(16):
 
 
     #plt.show()
+time.sleep(5)
