@@ -23,7 +23,7 @@ sdr.rx_lo = int(center_freq)
 sdr.rx_rf_bandwidth = int(sample_rate)
 sdr.rx_buffer_size = num_samps
 sdr.gain_control_mode_chan0 = 'manual'
-sdr.rx_hardwaregain_chan0 = 0 # dB, 0-72
+sdr.rx_hardwaregain_chan0 = 70 # dB, 0-72
 
 # CREATE TRANSMIT WAVEFORM(BPSK, 2 samples per symbol)
 num_symbols = 8192
@@ -117,16 +117,21 @@ for transmission_index in range(num_transmissions):
         rx_samples = sdr.rx()
         #print("transmitted samples: ",samples)
         
-        plt.figure(0)
-        plt.plot(rx_samples,'.-')
-        
         # Cross-correlation of the start sequence with the received signal
         cross_corr = np.correlate(rx_samples, start_sequence, mode='full')
+        fatt = 18000
+
+        # Filter the cross-correlation to only allow values above a threshold n
+        cross_corr = np.where(np.abs(cross_corr) > fatt, cross_corr, 0)
         
         # Find the index of the peak in the cross-correlation
         peak_index = np.argmax(np.abs(cross_corr))  # Index of the maximum value
         peak_value = cross_corr[peak_index]  # Value of the peak
         
+        if peak_value == 0:
+            continue
+        plt.figure(0)
+        plt.plot(rx_samples,'.-')
         #CALCULATE HOW MUCH SAMPLES AFTER THE FOUND INDEX
         samples_after_barker = len(rx_samples)-peak_index
         #HANDLE CASE WITH INCOMPLETE BARKER AT THE END BEING HIGHER CROSS CORRELATION VALUE
@@ -157,7 +162,7 @@ for transmission_index in range(num_transmissions):
         plt.axhline(0, color='grey', lw=0.5, ls='--')  # Add a horizontal line at y=0 for reference
         plt.legend()
         plt.grid()
-        #plt.show()
+        plt.show()
         extracted_samples = rx_samples[peak_index+1:peak_index+(num_symbols * 2 * len(spreading_sequence))]
         print(extracted_samples)
         # Copy the last element and append it to the array
