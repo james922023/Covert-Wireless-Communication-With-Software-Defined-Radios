@@ -50,23 +50,24 @@ x_symbols = np.cos(x_radians) + 1j * np.sin(x_radians)  # BPSK complex symbols
 x_symbols = np.repeat(x_symbols, 3)  # 16 samples per symbol
 
 for k in range(16):
+    if k > 0:
+        sdr.tx_destroy_buffer()
+        time.sleep(.1)
     ack_packet = int_to_5bit_array(k+1)
-    ack_packet = np.where(ack_packet > 0, -1, 1)
+    ack_packet = np.where(ack_packet == 0, 1, -1)
     ack_packet = np.repeat(ack_packet, 3)
     samples = np.concatenate((start_sequence, ack_packet, x_symbols)) # FOR THE GRAPH 0 is positive, 1 is negative
 
     #print("DATA WITH START SEQUENCE: ",bpsk_values)
     samples = samples * 2**14  # Scale the samples for PlutoSDR
     # Now 'samples' contains the BPSK PACKET to transmit
-    sdr.tx_destroy_buffer()
     sdr.tx_cyclic_buffer = True # Enable cyclic buffers
     success = False
-    sdr.tx_destroy_buffer()
-
+    
     sdr.tx(samples) # start transmitting
 
     while not success: #KEEP TRANSMITTING TIL GET ACK PACKET
-        #receieve samples
+        #receieve 
         rx_samples = sdr.rx()
         
         # Cross-correlation of the start sequence with the received signal
@@ -115,24 +116,18 @@ for k in range(16):
 
         # Convert the complex array based on the real part
         if peak_value>0:
-            converted_array = np.where(extracted_samples.real > 0, 0, 1)
-            flipped_ack_packet = np.where(ack_packet > 0, 1, 0)
-            #print(converted_array)
-            #print(flipped_ack_packet)
-        else:
             converted_array = np.where(extracted_samples.real > 0, 1, 0)
-            flipped_ack_packet = np.where(ack_packet > 0, 0, 1)
             #print(converted_array)
-            #print(flipped_ack_packet)
+        else:
+            converted_array = np.where(extracted_samples.real > 0, 0, 1)
+            #print(converted_array)
         if len(converted_array) % 3 == 0:
             reshaped_array = converted_array.reshape(-1, 3)
-            reshaped_array2 = flipped_ack_packet.reshape(-1, 3)
         else:
             continue
         # Remove redundancy (take average of every 3 elements)
         reduced_array = np.mean(reshaped_array, axis=1).round().astype(int)
-        reduced_array2 = np.mean(reshaped_array2, axis=1).round().astype(int)
-        if np.array_equal(reduced_array, reduced_array2):
+        if np.array_equal(reduced_array, int_to_5bit_array(k+1)):
             print('correct ack packet:',reduced_array)
             print(peak_value)
             print('100% sucess transmission')
@@ -157,4 +152,6 @@ for k in range(16):
     #plt.grid()
     print("wrong ack packets: ",num_wrong_ack_packets)
     #plt.show()
+sdr.tx_destroy_buffer()
+sdr = None  # Release the SDR object
 time.sleep(5)

@@ -23,7 +23,7 @@ sdr.rx_lo = int(center_freq)
 sdr.rx_rf_bandwidth = int(sample_rate)
 sdr.rx_buffer_size = num_samps
 sdr.gain_control_mode_chan0 = 'manual'
-sdr.rx_hardwaregain_chan0 = 0 # dB, 0-72
+sdr.rx_hardwaregain_chan0 = 70 # dB, 0-72
 
 # CREATE TRANSMIT WAVEFORM(BPSK, 2 samples per symbol)
 num_symbols = 10
@@ -52,24 +52,30 @@ sdr.rx_cyclic_buffer = False
 
 sdr.tx(samples) # start transmitting
 
+success = False
+while not success:
+    #receieve samples
+    rx_samples = sdr.rx()
+    #print("transmitted samples: ",samples)
+    # Stop transmitting
+    sdr.tx_destroy_buffer()
+    sdr.rx_destroy_buffer()
 
+    plt.figure(0)
+    plt.plot(rx_samples,'.-')
 
-#receieve samples
-rx_samples = sdr.rx()
-#print("transmitted samples: ",samples)
-# Stop transmitting
-sdr.tx_destroy_buffer()
-sdr.rx_destroy_buffer()
+    # Cross-correlation of the start sequence with the received signal
+    cross_corr = np.correlate(rx_samples, start_sequence, mode='full')
+    fatt = 15000
 
-plt.figure(0)
-plt.plot(rx_samples,'.-')
-
-# Cross-correlation of the start sequence with the received signal
-cross_corr = np.correlate(rx_samples, start_sequence, mode='full')
-
-# Find the index of the peak in the cross-correlation
-peak_index = np.argmax(np.abs(cross_corr))  # Index of the maximum value
-peak_value = cross_corr[peak_index]  # Value of the peak
+    # Filter the cross-correlation to only allow values above a threshold n
+    cross_corr = np.where(np.abs(cross_corr) > fatt, cross_corr, 0)
+    # Find the index of the peak in the cross-correlation
+    peak_index = np.argmax(np.abs(cross_corr))  # Index of the maximum value
+    peak_value = cross_corr[peak_index]  # Value of the peak
+    if peak_value == 0:
+            continue
+    success = True
 
 #CALCULATE HOW MUCH SAMPLES AFTER THE FOUND INDEX
 samples_after_barker = len(rx_samples)-peak_index
