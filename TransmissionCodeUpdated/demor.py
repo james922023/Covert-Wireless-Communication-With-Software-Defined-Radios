@@ -25,7 +25,7 @@ sdr.rx_rf_bandwidth = int(sample_rate)
 sdr.rx_buffer_size = num_samps
 sdr.gain_control_mode_chan0 = 'manual'
 sdr.rx_hardwaregain_chan0 = 70 # dB, 0-72
-word_array=[]
+
 def int_to_5bit_array(n):
     # Convert to 5-bit binary string and then map each bit to an integer
     binary_str = format(n, '05b')  # Convert integer to 5-bit binary string
@@ -169,18 +169,11 @@ for k in range(16):
     sdr.rx_cyclic_buffer = False
     sdr.tx(samples) # start transmitting
     time.sleep(1)
-    #PRINT ASCCI CONVERTED TO CONSOLE
-    # Convert the binary array to a string format
-    #binary_string = ''.join(str(bit) for bit in word_array)
-
-    # Split the binary string into 8-bit chunks
-    #chunks = [binary_string[i:i+8] for i in range(0, len(binary_string), 8)]
-
-    # Convert each chunk to an ASCII character
-    #ascii_text = ''.join(chr(int(chunk, 2)) for chunk in chunks)
-
-    #print(ascii_text)
-
-
     #plt.show()
-time.sleep(5)
+#After all transmissions, concatenate the reconstructed image bits and reshape to the original image dimensions
+reconstructed_image_bits = np.array(reconstructed_image_bits, dtype=np.uint8)
+reconstructed_image = np.packbits(reconstructed_image_bits).reshape(image.size)
+# Convert the NumPy array back to an image
+reconstructed_image = Image.fromarray(reconstructed_image, mode='L')
+# Save the image to a file
+reconstructed_image.save('transmittedimage.png')

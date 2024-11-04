@@ -162,7 +162,7 @@ for transmission_index in range(num_transmissions):
         plt.axhline(0, color='grey', lw=0.5, ls='--')  # Add a horizontal line at y=0 for reference
         plt.legend()
         plt.grid()
-        plt.show()
+        #plt.show()
         extracted_samples = rx_samples[peak_index+1:peak_index+(num_symbols * 2 * len(spreading_sequence))]
         print(extracted_samples)
         # Copy the last element and append it to the array
