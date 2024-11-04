@@ -9,7 +9,7 @@ from PIL import Image
 sample_rate = 1000000 # Hz
 center_freq = 915e6 # Hz
 num_samps = 52 # number of samples per call to rx()
-ack_freq = 850e6 # Hz
+ack_freq = 900e6 # Hz
 
 sdr = adi.Pluto("ip:192.168.2.1")
 sdr.sample_rate = int(sample_rate)
@@ -72,6 +72,9 @@ print("Length of arrays:", len(arrays))
 #print("original bits (1 will be -1 and 0 will be 1): ", x_int)
 
 for k in range(16):
+    if k > 0:
+        sdr.tx_destroy_buffer()
+        time.sleep(.05)
     # Define phase for BPSK: 0 for 0, π for 1
     #CREATE ARRAY OR USE IMAGE ARRAY AS STARTING POINT
     x_int = arrays[k]
@@ -185,4 +188,3 @@ for k in range(16):
     #plt.grid()
     print("wrong ack packets: ",num_wrong_ack_packets)
     #plt.show()
-time.sleep(5)

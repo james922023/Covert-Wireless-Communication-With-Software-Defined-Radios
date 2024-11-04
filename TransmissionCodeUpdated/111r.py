@@ -63,7 +63,6 @@ for k in range(16):
         rx_samples = sdr.rx()
         #print("transmitted samples: ",samples)
         # Stop transmitting
-        sdr.tx_destroy_buffer()
 
         # Cross-correlation of the start sequence with the received signal
         cross_corr = np.correlate(rx_samples, start_sequence, mode='full')
@@ -160,7 +159,9 @@ for k in range(16):
     #print("DATA WITH START SEQUENCE: ",bpsk_values)
     samples = samples * 2**14  # Scale the samples for PlutoSDR
     # Now 'samples' contains the BPSK PACKET to transmit
-    sdr.tx_destroy_buffer()
+    if k > 0:
+        sdr.tx_destroy_buffer()
+        time.sleep(.1)
     sdr.tx_cyclic_buffer = True # Enable cyclic buffers
     sdr.rx_cyclic_buffer = False
     sdr.tx(samples) # start transmitting
