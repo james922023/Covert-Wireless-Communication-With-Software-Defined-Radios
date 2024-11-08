@@ -159,15 +159,6 @@ for k in range(16):
 
 
 #plt.show()
-#PRINT ASCCI CONVERTED TO CONSOLE
-# Convert the binary array to a string format
-binary_string = ''.join(str(bit) for bit in reduced_array)
-
-# Split the binary string into 8-bit chunks
-chunks = [binary_string[i:i+8] for i in range(0, len(binary_string), 8)]
-
-# Convert each chunk to an ASCII character
-ascii_text = ''.join(chr(int(chunk, 2)) for chunk in chunks)
-
-print(ascii_text)
-time.sleep(5)
+# Print each sub-array
+for idx, array in enumerate(arrays):
+    print(f"Array {idx}: {array}")
