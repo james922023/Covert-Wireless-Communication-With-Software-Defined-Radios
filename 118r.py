@@ -32,14 +32,12 @@ num_symbols = 40
 start_sequence = np.array([1,1,1,-1,-1,-1,1,-1,-1,1,-1])
 n = 1  # Replace with any integer from 1 to 16
 ack_packet = int_to_5bit_array(n)
-ack_packet = np.where(ack_packet >0 , -1 , 1)
-ack_packet = np.repeat(ack_packet, 3)
+ack_packet = np.where(ack_packet == 0 , -1 , 1)
+#ack_packet = np.repeat(ack_packet, 3)
 
 #CREATE ARRAY OR USE IMAGE ARRAY AS STARTING POINT
 x_int = np.random.randint(0, 2, num_symbols)  # 0 to 1 (binary)
 #print("original bits (1 will be -1 and 0 will be 1): ", x_int)
-
-word_array=[]
 
 # Define phase for BPSK: 0 for 0, π for 1
 x_radians = x_int * np.pi  # 0 for 0, π for 1
@@ -50,8 +48,8 @@ x_symbols = np.repeat(x_symbols, 3)  # 16 samples per symbol
 
 for k in range(16):
     ack_packet = int_to_5bit_array(k+1)
-    ack_packet = np.where(ack_packet > 0, -1, 1)
-    ack_packet = np.repeat(ack_packet, 3)
+    ack_packet = np.where(ack_packet == 0, -1, 1)
+    #ack_packet = np.repeat(ack_packet, 3)
     success = False
 
     while not success: #KEEP Receiving TIL GET PACKET
@@ -73,7 +71,10 @@ for k in range(16):
 
         if peak_value == 0:
             continue
-            
+        #plt.figure(0)
+        #plt.plot(rx_samples,'.-')
+        #plt.plot(cross_corr)
+        #plt.show()
         #CALCULATE HOW MUCH SAMPLES AFTER THE FOUND INDEX
         samples_after_barker = len(rx_samples)-peak_index
         #HANDLE CASE WITH INCOMPLETE BARKER AT THE END BEING HIGHER CROSS CORRELATION VALUE
@@ -128,41 +129,42 @@ for k in range(16):
             converted_array = np.where(extracted_samples.real > 0, 1, 0)
             #print(converted_array)
         #print("length of converted array",len(converted_array))
-        # Step 2: Reshape the array into rows of 3 elements
+        if np.array_equal(converted_array[0:5],int_to_5bit_array(k+1)):
+            #print('correct ack packet:',reduced_array[0:5])
+            converted_array = converted_array[5:]
+        else:
+            #print('incorrect ack packet:',reduced_array[0:5])
+            continue
+        # Remove redundancy (take average of every 3 elements)
         if len(converted_array) % 3 ==0:
             reshaped_array = converted_array.reshape(-1, 3)
         else:
             continue
-        # Remove redundancy (take average of every 3 elements)
         reduced_array = np.mean(reshaped_array, axis=1).round().astype(int)
         #print("Converted Array without Redundancy:", reduced_array)
         #print("length of array without redundancy", len(reduced_array))
-        if np.array_equal(reduced_array[0:5],int_to_5bit_array(k+1)):
-            #print('correct ack packet:',reduced_array[0:5])
-            reduced_array = reduced_array[5:]
-        else:
-            #print('incorrect ack packet:',reduced_array[0:5])
-            continue
+
         #print("length reduced array",len(reduced_array))
         #print(reduced_array)
         if len(reduced_array) == len(x_int):
             print('100% success on transmission' ,k+1)
-            word_array.extend(reduced_array)
             success = True
+            
         else:
             print('transmission not 100%')
-    #PRINT ASCCI CONVERTED TO CONSOLE
-    # Convert the binary array to a string format
-    binary_string = ''.join(str(bit) for bit in word_array)
-
-    # Split the binary string into 8-bit chunks
-    chunks = [binary_string[i:i+8] for i in range(0, len(binary_string), 8)]
-
-    # Convert each chunk to an ASCII character
-    ascii_text = ''.join(chr(int(chunk, 2)) for chunk in chunks)
-
-    print(ascii_text)
 
 
-    #plt.show()
+
+#plt.show()
+#PRINT ASCCI CONVERTED TO CONSOLE
+# Convert the binary array to a string format
+binary_string = ''.join(str(bit) for bit in reduced_array)
+
+# Split the binary string into 8-bit chunks
+chunks = [binary_string[i:i+8] for i in range(0, len(binary_string), 8)]
+
+# Convert each chunk to an ASCII character
+ascii_text = ''.join(chr(int(chunk, 2)) for chunk in chunks)
+
+print(ascii_text)
 time.sleep(5)
