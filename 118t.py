@@ -8,7 +8,8 @@ from PIL import Image
 #SET PARAMETERS FOR THE RADIO
 sample_rate = 1000000 # Hz
 center_freq = 915e6 # Hz
-num_samps = 52 # number of samples per call to rx()
+num_samps = 12
+other_freq = 900e6
 
 sdr = adi.Pluto("ip:192.168.2.1")
 sdr.sample_rate = int(sample_rate)
@@ -17,6 +18,13 @@ sdr.sample_rate = int(sample_rate)
 sdr.tx_rf_bandwidth = int(sample_rate) # filter cutoff, just set it to the same as sample rate
 sdr.tx_lo = int(center_freq)
 sdr.tx_hardwaregain_chan0 = -10# Increase to increase tx power, valid range is -90 to 0 dB
+
+# Config Rx
+sdr.rx_lo = int(other_freq)
+sdr.rx_rf_bandwidth = int(sample_rate)
+sdr.rx_buffer_size = num_samps
+sdr.gain_control_mode_chan0 = 'manual'
+sdr.rx_hardwaregain_chan0 = 0 # dB, 0-72
 
 def int_to_5bit_array(n):
     # Convert to 5-bit binary string and then map each bit to an integer
@@ -54,6 +62,8 @@ for k in range(16):
     success = False
     
     sdr.tx(samples) # start transmitting
-    time.sleep(1)
+    time.sleep(2)
+    '''for i in range(2000):
+        sdr.tx(samples) # transmit the batch of samples once'''
     sdr.tx_destroy_buffer()
 sdr = None  # Release the SDR object
