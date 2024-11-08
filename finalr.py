@@ -8,7 +8,7 @@ from PIL import Image
 #SET PARAMETERS FOR THE RADIO
 sample_rate = 1000000 # Hz
 center_freq = 915e6 # Hz
-num_samps = 16416 # number of samples per call to rx()
+num_samps = 49184 # number of samples per call to rx()
 other_freq = 900e6
 
 sdr = adi.Pluto("ip:192.168.2.1")
@@ -42,7 +42,7 @@ ack_packet = np.where(ack_packet == 0 , -1 , 1)
 #ack_packet = np.repeat(ack_packet, 3)
 
 #CREATE ARRAY OR USE IMAGE ARRAY AS STARTING POINT
-x_int = np.random.randint(2,size = 8192)  # 0 to 1 (binary)
+#x_int = np.random.randint(2,size = 8192)  # 0 to 1 (binary)
 #print("original bits (1 will be -1 and 0 will be 1): ", x_int)
 
 # Define phase for BPSK: 0 for 0, π for 1
@@ -83,7 +83,7 @@ for k in range(16):
         #CALCULATE HOW MUCH SAMPLES AFTER THE FOUND INDEX
         samples_after_barker = len(rx_samples)-peak_index
         #HANDLE CASE WITH INCOMPLETE BARKER AT THE END BEING HIGHER CROSS CORRELATION VALUE
-        if samples_after_barker < (num_symbols)+len(ack_packet)-1:
+        if samples_after_barker < (num_symbols*3)+len(ack_packet)-1:
             # If the peak is too close to the end, we need to find the next highest peak
             cross_corr[peak_index] = 0  # Temporarily set the peak to negative infinity
             peak_index = np.argmax(np.abs(cross_corr))  # Find the next peak
@@ -92,7 +92,7 @@ for k in range(16):
                 continue
             #BREAK iF NOT ENOUGH SAMPLES AFTER THIS PEAK
             samples_after_barker = len(rx_samples)-peak_index
-            if samples_after_barker < (num_symbols)-1:
+            if samples_after_barker < (num_symbols*3)-1:
                 continue
             peak_value = cross_corr[peak_index]  # Update peak value
             # Print the results
@@ -120,7 +120,7 @@ for k in range(16):
         #plt.axhline(0, color='grey', lw=0.5, ls='--')  # Add a horizontal line at y=0 for reference
         #plt.legend()
         #plt.grid()
-        extracted_samples = rx_samples[peak_index+1:peak_index+num_symbols+len(ack_packet)+1]
+        extracted_samples = rx_samples[peak_index+1:peak_index+(num_symbols*3)+len(ack_packet)+1]
         #print(extracted_samples)
         # Copy the last element and append it to the array
         #extracted_samples = np.append(extracted_samples, extracted_samples[-1])
@@ -130,7 +130,7 @@ for k in range(16):
         #plt.plot(extracted_samples,'.-')
         #plt.plot(cross_corr)
         #plt.show()
-        if np.any(np.abs(extracted_samples.real) < 10):
+        if np.any(np.abs(extracted_samples.real) < 500):
             continue
         print("samples are high enough val")
         #print(extracted_samples)
@@ -148,20 +148,23 @@ for k in range(16):
         else:
             #print('incorrect ack packet:',reduced_array[0:5])
             continue
+        if len(converted_array) % 3 ==0:
+            reshaped_array = converted_array.reshape(-1, 3)
+        else:
+            continue
         # Remove redundancy (take average of every 3 elements)
         #print("Converted Array without Redundancy:", reduced_array)
         #print("length of array without redundancy", len(reduced_array))
-
+        reduced_array = np.mean(reshaped_array, axis=1).round().astype(int)
         #print("length reduced array",len(reduced_array))
         #print(reduced_array)
-        if len(converted_array) == len(x_int):
+        if len(converted_array) == 8192:
             print('100% success on transmission' ,k+1)    
             arrays[k] = reduced_array
             success = True
            
         else:
             print('transmission not 100%')
-            time.sleep(.1)
 # CONVERT IMAGE TO ARRAY FOR SENDING
 image_path = "StegoImage.png"
 image = Image.open(image_path) #.convert('L')  # Convert to grayscale
