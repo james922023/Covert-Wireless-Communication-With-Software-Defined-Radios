@@ -6,9 +6,10 @@ from scipy.stats import mode
 from PIL import Image
 
 #SET PARAMETERS FOR THE RADIO
-sample_rate = 1000000 # Hz
+sample_rate = 1000100 # Hz
 center_freq = 915e6 # Hz
 num_samps = 292 # number of samples per call to rx()
+other_freq = 900e6
 
 sdr = adi.Pluto("ip:192.168.2.1")
 sdr.sample_rate = int(sample_rate)
@@ -19,6 +20,11 @@ sdr.rx_rf_bandwidth = int(sample_rate)
 sdr.rx_buffer_size = num_samps
 sdr.gain_control_mode_chan0 = 'manual'
 sdr.rx_hardwaregain_chan0 = 70 # dB, 0-72
+
+# Config Tx
+sdr.tx_lo = int(center_freq)
+sdr.tx_rf_bandwidth = int(sample_rate)
+sdr.tx_hardwaregain_chan0 = -87 # dB, 0-72
 
 def int_to_5bit_array(n):
     # Convert to 5-bit binary string and then map each bit to an integer
@@ -36,7 +42,7 @@ ack_packet = np.where(ack_packet == 0 , -1 , 1)
 #ack_packet = np.repeat(ack_packet, 3)
 
 #CREATE ARRAY OR USE IMAGE ARRAY AS STARTING POINT
-x_int = np.random.randint(0, 2, num_symbols)  # 0 to 1 (binary)
+x_int = np.array([0,1,1,0,1,0,0,0,0,1,1,0,0,1,0,1,0,1,1,0,1,1,0,0,0,1,1,0,1,1,0,0,0,1,1,0,1,1,1,1])  # 0 to 1 (binary)
 #print("original bits (1 will be -1 and 0 will be 1): ", x_int)
 
 # Define phase for BPSK: 0 for 0, π for 1
@@ -63,7 +69,7 @@ for k in range(16):
         # Cross-correlation of the start sequence with the received signal
         cross_corr = np.correlate(rx_samples, start_sequence, mode='full')
 
-        fatt=20000
+        fatt=23000
 
         cross_corr = np.where(np.abs(cross_corr) > fatt , cross_corr, 0)
         
@@ -73,10 +79,7 @@ for k in range(16):
 
         if peak_value == 0:
             continue
-        #plt.figure(0)
-        #plt.plot(rx_samples,'.-')
-        #plt.plot(cross_corr)
-        #plt.show()
+       
         #CALCULATE HOW MUCH SAMPLES AFTER THE FOUND INDEX
         samples_after_barker = len(rx_samples)-peak_index
         #HANDLE CASE WITH INCOMPLETE BARKER AT THE END BEING HIGHER CROSS CORRELATION VALUE
@@ -122,7 +125,11 @@ for k in range(16):
         # Copy the last element and append it to the array
         #extracted_samples = np.append(extracted_samples, extracted_samples[-1])
         #print(extracted_samples)
-
+        np.array(extracted_samples)
+        
+        if np.any(np.abs(extracted_samples.real) < 500):
+            continue
+        #print(extracted_samples)
         # Convert the complex array based on the real part
         if peak_value>0:
             converted_array = np.where(extracted_samples.real > 0, 0, 1)
@@ -149,10 +156,23 @@ for k in range(16):
         #print("length reduced array",len(reduced_array))
         #print(reduced_array)
         if len(reduced_array) == len(x_int):
-            print('100% success on transmission' ,k+1)
+            #print(peak_value)
+            if np.array_equal(reduced_array,x_int):
+                print('100% success on transmission' ,k+1)
+                #plt.figure(0)
+                #plt.plot(rx_samples,'.-')
+                #plt.plot(cross_corr)
+                #plt.show()
+            else:
+                pass
+                #plt.figure(0)
+                #plt.plot(rx_samples,'.-')
+                #plt.plot(cross_corr)
+                #plt.show()
+                
             arrays[k] = reduced_array
             success = True
-            
+           
         else:
             print('transmission not 100%')
 
@@ -160,5 +180,5 @@ for k in range(16):
 
 #plt.show()
 # Print each sub-array
-for idx, array in enumerate(arrays):
-    print(f"Array {idx}: {array}")
+#for idx, array in enumerate(arrays):
+    #print(f"Array {idx}: {array}")
