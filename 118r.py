@@ -46,6 +46,8 @@ x_symbols = np.cos(x_radians) + 1j * np.sin(x_radians)  # BPSK complex symbols
 # Repeat each symbol to create the waveform with 16 samples per symbol
 x_symbols = np.repeat(x_symbols, 3)  # 16 samples per symbol
 
+arrays = [None] * 16
+
 for k in range(16):
     ack_packet = int_to_5bit_array(k+1)
     ack_packet = np.where(ack_packet == 0, -1, 1)
@@ -148,6 +150,7 @@ for k in range(16):
         #print(reduced_array)
         if len(reduced_array) == len(x_int):
             print('100% success on transmission' ,k+1)
+            arrays[k] = reduced_array
             success = True
             
         else:

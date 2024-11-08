@@ -54,6 +54,6 @@ for k in range(16):
     success = False
     
     sdr.tx(samples) # start transmitting
-    time.sleep(2)
+    time.sleep(1)
     sdr.tx_destroy_buffer()
 sdr = None  # Release the SDR object
