@@ -52,7 +52,7 @@ ack_packet = np.where(ack_packet == 0 , -1 , 1)
 # Repeat each symbol to create the waveform with 16 samples per symbol
 #x_symbols = np.repeat(x_symbols, 3)  # 16 samples per symbol
 
-arrays = [None] * 16
+reconstructed_image_bits = []
 
 for k in range(16):
     ack_packet = int_to_5bit_array(k+1)
@@ -160,16 +160,14 @@ for k in range(16):
         #print(reduced_array)
         if len(converted_array) == 8192:
             print('100% success on transmission' ,k+1)    
-            arrays[k] = reduced_array
+            reconstructed_image_bits.extend(reduced_array)
             success = True
-           
         else:
             print('transmission not 100%')
 # CONVERT IMAGE TO ARRAY FOR SENDING
 image_path = "StegoImage.png"
 image = Image.open(image_path) #.convert('L')  # Convert to grayscale
 #After all transmissions, concatenate the reconstructed image bits and reshape to the original image dimensions
-reconstructed_image_bits = np.concatenate(arrays)
 reconstructed_image_bits = np.array(reconstructed_image_bits, dtype=np.uint8)
 reconstructed_image = np.packbits(reconstructed_image_bits).reshape(image.size)
 # Convert the NumPy array back to an image
