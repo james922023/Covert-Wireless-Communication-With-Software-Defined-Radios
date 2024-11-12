@@ -6,10 +6,9 @@ from scipy.stats import mode
 from PIL import Image
 
 #SET PARAMETERS FOR THE RADIO
-sample_rate = 1000100 # Hz
+sample_rate = 1000000 # Hz
 center_freq = 915e6 # Hz
 num_samps = 292 # number of samples per call to rx()
-other_freq = 900e6
 
 sdr = adi.Pluto("ip:192.168.2.1")
 sdr.sample_rate = int(sample_rate)
@@ -20,11 +19,6 @@ sdr.rx_rf_bandwidth = int(sample_rate)
 sdr.rx_buffer_size = num_samps
 sdr.gain_control_mode_chan0 = 'manual'
 sdr.rx_hardwaregain_chan0 = 70 # dB, 0-72
-
-# Config Tx
-sdr.tx_lo = int(center_freq)
-sdr.tx_rf_bandwidth = int(sample_rate)
-sdr.tx_hardwaregain_chan0 = -87 # dB, 0-72
 
 def int_to_5bit_array(n):
     # Convert to 5-bit binary string and then map each bit to an integer
@@ -61,6 +55,7 @@ for k in range(16):
     success = False
 
     while not success: #KEEP Receiving TIL GET PACKET
+        start_time = time.perf_counter() 
         #receieve samples
         rx_samples = sdr.rx()
         #print("transmitted samples: ",samples)
@@ -159,6 +154,9 @@ for k in range(16):
             #print(peak_value)
             if np.array_equal(reduced_array,x_int):
                 print('100% success on transmission' ,k+1)
+                end_time = time.perf_counter()  # End timing
+                elapsed_time = end_time - start_time
+                print(f"Time taken: {elapsed_time:.6f} seconds")
                 #plt.figure(0)
                 #plt.plot(rx_samples,'.-')
                 #plt.plot(cross_corr)
@@ -177,8 +175,11 @@ for k in range(16):
             print('transmission not 100%')
 
 
-
+sdr.rx_destroy_buffer()
 #plt.show()
 # Print each sub-array
-#for idx, array in enumerate(arrays):
-    #print(f"Array {idx}: {array}")
+for idx, array in enumerate(arrays):
+     # Group bits into bytes and convert each byte to an ASCII character
+    ascii_chars = ''.join(chr(int(''.join(map(str, array[i:i+8])), 2)) for i in range(0, len(array), 8))
+    
+    print(f"Array {idx}: {ascii_chars}")
