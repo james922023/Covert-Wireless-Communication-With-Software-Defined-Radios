@@ -9,7 +9,6 @@ from PIL import Image
 sample_rate = 1000000 # Hz
 center_freq = 915e6 # Hz
 num_samps = 12
-other_freq = 900e6
 
 sdr = adi.Pluto("ip:192.168.2.1")
 sdr.sample_rate = int(sample_rate)
@@ -18,13 +17,6 @@ sdr.sample_rate = int(sample_rate)
 sdr.tx_rf_bandwidth = int(sample_rate) # filter cutoff, just set it to the same as sample rate
 sdr.tx_lo = int(center_freq)
 sdr.tx_hardwaregain_chan0 = -10# Increase to increase tx power, valid range is -90 to 0 dB
-
-# Config Rx
-sdr.rx_lo = int(other_freq)
-sdr.rx_rf_bandwidth = int(sample_rate)
-sdr.rx_buffer_size = num_samps
-sdr.gain_control_mode_chan0 = 'manual'
-sdr.rx_hardwaregain_chan0 = 0 # dB, 0-72
 
 def int_to_5bit_array(n):
     # Convert to 5-bit binary string and then map each bit to an integer
@@ -58,12 +50,9 @@ for k in range(16):
     #print("DATA WITH START SEQUENCE: ",bpsk_values)
     samples = samples * 2**14  # Scale the samples for PlutoSDR
     # Now 'samples' contains the BPSK PACKET to transmit
-    sdr.tx_cyclic_buffer = True # Enable cyclic buffers
+    sdr.tx_cyclic_buffer = False # Enable cyclic buffers
     success = False
-    
-    sdr.tx(samples) # start transmitting
-    time.sleep(2)
-    '''for i in range(2000):
-        sdr.tx(samples) # transmit the batch of samples once'''
+    for i in range(790):
+        sdr.tx(samples)
     sdr.tx_destroy_buffer()
 sdr = None  # Release the SDR object
