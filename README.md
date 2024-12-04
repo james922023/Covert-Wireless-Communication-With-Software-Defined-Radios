@@ -1,6 +1,7 @@
 # GOALS OF THIS PROJECT
--Hide data in an image using Least Significant Bit Steganography that is to be sent between software defined radios
--Hide the Signal being sent between software defined radios leveraging DSSS to spread the signal making it noiselike.
+1. Hide data in an image using Least Significant Bit Steganography that is to be sent between software defined radios
+
+2. Hide the Signal being sent between software defined radios leveraging DSSS to spread the signal making it noiselike.
 
 # The Stegocode as of (9/06/2024)
 
