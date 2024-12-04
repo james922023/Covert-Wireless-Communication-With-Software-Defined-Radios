@@ -9,7 +9,7 @@ Combining these two will allow the wireless communication to be covert.
 
 Right now, we have a transmission system for a PlutoSDR that allows the Pluto to send an image to itself using its full duplex capabilities. We were also able to have a short DSSS spreading sequence applied to this, and it still transmitted and received perfectly fine. As for two radios, we were only able to reliably send a short message like hello once, and sixteen times, between two PlutoSDR's on seperate computers. In addition to the transmission, we have matlab code that fully works and implements LSB steganography. This code can work on matlabonline, and was implemented there.
 
-#HOW TO USE WHAT HAS BEEN MADE HERE, TO TEST AND POTENTIALLY IMPROVE
+# HOW TO USE WHAT HAS BEEN MADE HERE, TO TEST AND POTENTIALLY IMPROVE
 1. Once you have a computer and a PlutoSDR, you should follow the instructions on this website https://pysdr.org/ . More specifically this section:
 
 ![image](https://github.com/user-attachments/assets/801ab391-ec2b-4bcb-83fc-353dfd64d965)
