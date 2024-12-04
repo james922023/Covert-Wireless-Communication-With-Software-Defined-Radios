@@ -3,6 +3,8 @@
 
 2. Hide the Signal being sent between software defined radios leveraging DSSS to spread the signal making it noiselike.
 
+Combining these two will allow the wireless communication to be covert.
+
 # The Stegocode as of (9/06/2024)
 
 -We are able to embed a bit sequence and decode it from a black and white image and then extract it
