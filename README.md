@@ -1,4 +1,7 @@
-# This is where we will store our project code as we develop it.
+# GOALS OF THIS PROJECT
+-Hide data in an image using Least Significant Bit Steganography that is to be sent between software defined radios
+-Hide the Signal being sent between software defined radios leveraging DSSS to spread the signal making it noiselike.
+
 # The Stegocode as of (9/06/2024)
 
 -We are able to embed a bit sequence and decode it from a black and white image and then extract it
