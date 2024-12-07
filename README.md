@@ -30,3 +30,17 @@ Once your environment is setup, you should be able run the transmitting and rece
 ![image](https://github.com/user-attachments/assets/f36cc663-208c-4176-9e16-6214c6be0bb0)
 
 Once you confirm this runs, you should be able to run any of the python files in the project. For any matlab ones, you would need to use matlab online or download matlab to run those.
+
+# What Files Do What?
+
+*The GUI Folder has GUI programs that were used for showcasing our presentation. They may need to be adjusted or moved into the same folder as some of the programs that they run for them to work properly.
+
+*The LSBMathLabCode Folder includes all matlab programs that we developed. Thier Names are pretty self explanatory to thier function. The only one that isnt is test. Test & Test2workwithodd can be used to change the number of LSB bits embedded to see how it affects the image Visually.
+
+*Single radio transmission code folder is also pretty self explanitory with the names and thier function. All files in this folder are on the single radio.
+
+*In two radio transmission folder, 1122 and 11222 are the transmitter and receiver files respectivly for two radio transmission. That was the most up to date one. Other than that, Its self explanitory with the names. Finalr and finalt are also a matching pair of transmissions with r being reciever and t being transmitter.
+
+*Additionally there is more not working code inside the not working folder in tworadiotransmission.
+
+* Finally, there is a folder with old non-working code, of various files that we had tried in the past. We are keeping it there in case there might be something useful in them.
