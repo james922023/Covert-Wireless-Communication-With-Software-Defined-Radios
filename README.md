@@ -1,3 +1,6 @@
+# OUR SPONSOR
+Our sponsor was FAU center for connected autonomy and artifical intellegence. More specifically, Dr.Georgios Sklivanitis.
+
 # GOALS OF THIS PROJECT
 1. Hide data in an image using Least Significant Bit Steganography that is to be sent between software defined radios
 
