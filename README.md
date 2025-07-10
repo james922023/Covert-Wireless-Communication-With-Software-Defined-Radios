@@ -1,3 +1,7 @@
+VIDEO OF PROJECT
+
+[![Watch the video](https://img.youtube.com/vi/XBw89xhm86A/maxresdefault.jpg)](https://www.youtube.com/watch?v=XBw89xhm86A)
+
 # OUR SPONSOR
 Our sponsor was FAU center for connected autonomy and artifical intellegence. More specifically, Dr.Georgios Sklivanitis.
 
